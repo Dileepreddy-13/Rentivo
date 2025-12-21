@@ -18,6 +18,7 @@
   "homepage": "https://github.com/Dileepreddy-13/Rentivo#readme",
   "dependencies": {
     "ejs": "^3.1.10",
+    "ejs-mate": "^4.0.0",
     "express": "^5.2.1",
     "method-override": "^3.0.0",
     "mongoose": "^9.0.2",
