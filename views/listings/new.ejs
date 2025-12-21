@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rentivo</title>
+</head>
+<body>
+    <h3>Create New Listing</h3>
+    <form action="/listings" method="POST">
+        <input type="text" placeholder="Enter Title" name="listing[title]" required>
+        <br><br>
+        <textarea  name="listing[description]" placeholder="Enter Description"></textarea>
+        <br><br>
+        <input type="text" placeholder="Enter Image URL" name="listing[image]">
+        <br><br>
+        <input type="number"  placeholder="Enter Price" name="listing[price]" required>
+        <br><br>
+        <input type="text" placeholder="Enter Location" name="listing[location]" required>
+        <br><br>
+        <input type="text" placeholder="Enter Country" name="listing[country]" required>
+        <br><br>
+        <button type="submit">Create Listing</button>
+</body>
+</html>
