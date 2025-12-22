@@ -24,7 +24,7 @@ const ListingSchema = new Schema({
         type: String,
         default: "https://i0.wp.com/impactify.io/wp-content/uploads/2024/05/placeholder-5.png?ssl=1",
         set:(v) => {
-            v==="" ? "https://i0.wp.com/impactify.io/wp-content/uploads/2024/05/placeholder-5.png?ssl=1" : v;
+            return v==="" ? "https://i0.wp.com/impactify.io/wp-content/uploads/2024/05/placeholder-5.png?ssl=1" : v;
         }
     }
 });
