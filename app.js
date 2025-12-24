@@ -7,6 +7,9 @@ const methodOverride = require('method-override');
 const ejsMate = require("ejs-mate")
 const wrapAsync = require('./utils/wrapAsync');
 const ExpressError = require('./utils/ExpressError');
+const joi = require('joi');
+const { listingSchema } = require('./schema');
+
 
 app.use(methodOverride('_method'));
 
@@ -28,6 +31,23 @@ async function main() {
     await mongoose.connect('mongodb://127.0.0.1:27017/Rentivo');
 }
 
+const validateListing = (req, res, next) => {
+    const { error } = listingSchema.validate(req.body);
+    if (error) {
+        const msg = error.details.map(el => el.message).join(',');
+        throw new ExpressError(400, msg);
+    }
+    next();
+};
+
+const validateObjectId = (req, res, next) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ExpressError(400, "Invalid Listing ID");
+    }
+    next();
+};
+
 app.get('/', (req, res) => {
     res.send('Welcome to Rentivo!');
 });
@@ -42,7 +62,7 @@ app.get("/listings/new", (req, res) => {
     res.render("listings/new");
 });
 
-app.get("/listings/:id", wrapAsync(async (req, res) => {
+app.get("/listings/:id",validateObjectId, wrapAsync(async (req, res) => {
     let { id } = req.params;
     let listing = await Listing.findById(id);
     if (!listing) {
@@ -51,15 +71,14 @@ app.get("/listings/:id", wrapAsync(async (req, res) => {
     res.render("listings/show", { listing });
 }));
 
-app.post("/listings", wrapAsync(async (req, res) => {
-    if (!req.body.listing) throw new ExpressError(400, 'Invalid Listing Data'); 
+app.post("/listings", validateListing, wrapAsync(async (req, res) => {
     const newListing = new Listing(req.body.listing);
     await newListing.save();
     res.redirect("/listings");
 
 }));
 
-app.get("/listings/:id/edit", wrapAsync(async (req, res) => {
+app.get("/listings/:id/edit", validateObjectId, wrapAsync(async (req, res) => {
     let { id } = req.params;
     let listing = await Listing.findById(id);
     if (!listing) {
@@ -68,14 +87,13 @@ app.get("/listings/:id/edit", wrapAsync(async (req, res) => {
     res.render("listings/edit", { listing });
 }));
 
-app.put("/listings/:id", wrapAsync(async (req, res) => {
+app.put("/listings/:id", validateListing, validateObjectId, wrapAsync(async (req, res) => {
     let { id } = req.params;
-    if (!req.body.listing) throw new ExpressError(400, 'Invalid Listing Data');
     await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { runValidators: true, new: true });
     res.redirect("/listings" + "/" + id);
 }));
 
-app.delete("/listings/:id", wrapAsync(async (req, res) => {
+app.delete("/listings/:id", validateObjectId, wrapAsync(async (req, res) => {
     let { id } = req.params;
     await Listing.findByIdAndDelete(id);
     res.redirect("/listings");
