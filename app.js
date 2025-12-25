@@ -12,7 +12,6 @@ const { listingSchema } = require('./schema');
 
 
 app.use(methodOverride('_method'));
-
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -111,4 +110,3 @@ app.use((err, req, res, next) => {
 app.listen(8080, () => {
     console.log('Server is running on port 8080');
 });
-
