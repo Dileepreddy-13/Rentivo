@@ -56,7 +56,6 @@ app.get('/listings', wrapAsync(async (req, res) => {
     res.render("listings/index", { allListings });
 }));
 
-
 app.get("/listings/new", (req, res) => {
     res.render("listings/new");
 });
