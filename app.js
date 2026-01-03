@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
+const Review = require('./models/review');
 const Listing = require('./models/listing');
 const path = require('path');
 const methodOverride = require('method-override');
@@ -9,7 +10,7 @@ const wrapAsync = require('./utils/wrapAsync');
 const ExpressError = require('./utils/ExpressError');
 const joi = require('joi');
 const { listingSchema, reviewSchema } = require('./schema');
-const Review = require('./models/review');
+
 
 
 app.use(methodOverride('_method'));
@@ -76,7 +77,7 @@ app.get("/listings/new", (req, res) => {
 
 app.get("/listings/:id",validateObjectId, wrapAsync(async (req, res) => {
     let { id } = req.params;
-    let listing = await Listing.findById(id);
+    let listing = await Listing.findById(id).populate('reviews');
     if (!listing) {
         throw new ExpressError(404, 'Listing Not Found');
     }
@@ -125,6 +126,14 @@ app.post("/listings/:id/reviews", validateReview, validateObjectId, wrapAsync(as
     await listing.save();
     res.redirect("/listings/" + id);
 }));
+
+app.delete("/listings/:id/reviews/:reviewId", validateObjectId, wrapAsync(async (req, res) => {
+    const { id, reviewId } = req.params;
+    await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect("/listings/" + id);
+}));
+
 
 app.all(/.*/, (req, res, next) => {
     next(new ExpressError(404, 'Page Not Found'));
