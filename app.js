@@ -8,7 +8,8 @@ const ejsMate = require("ejs-mate")
 const wrapAsync = require('./utils/wrapAsync');
 const ExpressError = require('./utils/ExpressError');
 const joi = require('joi');
-const { listingSchema } = require('./schema');
+const { listingSchema, reviewSchema } = require('./schema');
+const Review = require('./models/review');
 
 
 app.use(methodOverride('_method'));
@@ -39,6 +40,16 @@ const validateListing = (req, res, next) => {
     next();
 };
 
+const validateReview = (req, res, next) => {
+    const { error } = reviewSchema.validate(req.body);
+    if (error) {
+        const msg = error.details.map(el => el.message).join(',');
+        throw new ExpressError(400, msg);
+    }
+    next();
+};
+
+
 const validateObjectId = (req, res, next) => {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -46,6 +57,9 @@ const validateObjectId = (req, res, next) => {
     }
     next();
 };
+
+
+//Listings Routes
 
 app.get('/', (req, res) => {
     res.send('Welcome to Rentivo!');
@@ -95,6 +109,21 @@ app.delete("/listings/:id", validateObjectId, wrapAsync(async (req, res) => {
     let { id } = req.params;
     await Listing.findByIdAndDelete(id);
     res.redirect("/listings");
+}));
+
+//Review Routes 
+
+app.post("/listings/:id/reviews", validateReview, validateObjectId, wrapAsync(async (req, res) => {
+    const { id } = req.params;
+    const listing = await Listing.findById(id);
+    if (!listing) {
+        throw new ExpressError(404, 'Listing Not Found');
+    }
+    const review = new Review(req.body.review);
+    await review.save();
+    listing.reviews.push(review);
+    await listing.save();
+    res.redirect("/listings/" + id);
 }));
 
 app.all(/.*/, (req, res, next) => {
