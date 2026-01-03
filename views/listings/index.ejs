@@ -7,7 +7,7 @@
                 const listing = allListings[i]; %>
                 <div class="col-md-4 col-sm-6 mb-4">
                     <a href="/listings/<%= listing._id %>" class="text-decoration-none text-dark">
-                        <div class="card h-100">
+                        <div class="card h-100 listing-card">
                             <img src="<%= listing.image %>" class="card-img-top view-image" alt="<%= listing.title %>" style="height: 20rem; object-fit: cover;">
                             <div class="card-body">
                                 <h5 class="card-title"><%= listing.title %></h5>
