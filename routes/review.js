@@ -3,43 +3,16 @@ const router = express.Router({mergeParams: true});
 const Listing = require('../models/listing');
 const Review = require('../models/review');
 const wrapAsync = require('../utils/wrapAsync');
-const ExpressError = require('../utils/ExpressError');
-const { reviewSchema } = require('../schema');
-const mongoose = require('mongoose');
-
-
-const validateReview = (req, res, next) => {
-    const { error } = reviewSchema.validate(req.body);
-    if (error) {
-        const msg = error.details.map(el => el.message).join(',');
-        throw new ExpressError(400, msg);
-    }
-    next();
-};
-
-
-const validateObjectId = (req, res, next) => {
-    const { id , reviewId } = req.params;
-    if (id && !mongoose.Types.ObjectId.isValid(id)) {
-        throw new ExpressError(400, "Invalid Listing ID");
-    }
-    if (reviewId && !mongoose.Types.ObjectId.isValid(reviewId)) {
-        throw new ExpressError(400, "Invalid Review ID");
-    }
-    next();
-};
-
+const { isLoggedIn, validateReview, validateObjectId, isListingExists, isReviewExists, isAuthor } = require('../middlewares');
 
 //Review Routes 
 
-router.post("/", validateReview, validateObjectId, wrapAsync(async (req, res) => {
+router.post("/", validateObjectId,  isLoggedIn, isListingExists, isAuthor, validateReview, wrapAsync(async (req, res) => {
     const { id } = req.params;
     const listing = await Listing.findById(id);
-    if (!listing) {
-        req.flash("error", "Listing Not Found");
-        return res.redirect("/listings");
-    }
     const review = new Review(req.body.review);
+    review.author = req.user._id;
+    console.log(review);
     await review.save();
     listing.reviews.push(review);
     await listing.save();
@@ -47,7 +20,7 @@ router.post("/", validateReview, validateObjectId, wrapAsync(async (req, res) =>
     res.redirect("/listings/" + id);
 }));
 
-router.delete("/:reviewId", validateObjectId, wrapAsync(async (req, res) => {
+router.delete("/:reviewId", validateObjectId,  isLoggedIn, isListingExists, isReviewExists, isAuthor, wrapAsync(async (req, res) => {
     const { id, reviewId } = req.params;
     await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
     await Review.findByIdAndDelete(reviewId);
