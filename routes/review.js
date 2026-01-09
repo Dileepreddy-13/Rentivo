@@ -7,12 +7,11 @@ const { isLoggedIn, validateReview, validateObjectId, isListingExists, isReviewE
 
 //Review Routes 
 
-router.post("/", validateObjectId,  isLoggedIn, isListingExists, isAuthor, validateReview, wrapAsync(async (req, res) => {
+router.post("/", validateObjectId,  isLoggedIn, isListingExists, validateReview, wrapAsync(async (req, res) => {
     const { id } = req.params;
     const listing = await Listing.findById(id);
     const review = new Review(req.body.review);
     review.author = req.user._id;
-    console.log(review);
     await review.save();
     listing.reviews.push(review);
     await listing.save();
