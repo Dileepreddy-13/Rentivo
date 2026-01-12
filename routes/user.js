@@ -6,6 +6,7 @@ const passport = require('passport');
 const { saveRedirectUrl } = require('../middlewares');
 const { userSchema } = require('../schema');
 const ExpressError = require('../utils/ExpressError');
+const userController = require('../controllers/users');
 
 const validateUser = (req, res, next) => {
     const { error } = userSchema.validate(req.body);
@@ -16,45 +17,14 @@ const validateUser = (req, res, next) => {
     next();
 };
 
-router.get('/signup', (req, res) => {
-    res.render('users/signup');
-});
+router.get('/signup', userController.signupForm);
 
-router.post('/signup', validateUser, wrapAsync(async (req, res, next) => {
-    try {
-        const { username, email, password } = req.body.user;
-        const user = new User({ username, email });
-        const registeredUser = await User.register(user, password);
-        req.login(registeredUser, err => {
-            if (err) return next(err);
-            req.flash('success', 'Welcome to Rentivo!');
-            res.redirect('/listings');
-        });
+router.post('/signup', validateUser, wrapAsync(userController.signup));
 
-    } catch (e) {
-        req.flash('error', e.message);
-        res.redirect('/signup');
-    }
-}));
+router.get('/login', userController.loginForm);
 
-router.get('/login', (req, res) => {
-    res.render('users/login');
-});
+router.post('/login', saveRedirectUrl, passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), wrapAsync(userController.login));
 
-router.post('/login', saveRedirectUrl, passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), async (req, res) => {
-    req.flash('success', 'Welcome back to Rentivo!');
-    res.redirect(res.locals.redirectUrl || '/listings');
-});
-
-router.get('/logout', (req, res, next) => {
-    req.logout((err) => {
-        if (err) {
-            return next(err);
-        }
-        req.flash('success', 'Logged you out!');
-        res.redirect('/listings');
-    }
-    );
-});
+router.get('/logout', userController.logout);
 
 module.exports = router;
