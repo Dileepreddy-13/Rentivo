@@ -4,6 +4,10 @@ const Listing = require('../models/listing');
 const wrapAsync = require('../utils/wrapAsync');
 const { isLoggedIn, isOwner, validateListing, validateObjectId, isListingExists } = require('../middlewares');
 const listingController = require('../controllers/listing');
+const multer = require('multer');
+const { storage } = require('../cloudConfig');
+
+const upload = multer({ storage });
 
 //Listings Routes
 
@@ -13,7 +17,7 @@ router.get("/new", isLoggedIn, listingController.renderNewForm);
 
 router.get("/:id", validateObjectId, isListingExists, wrapAsync(listingController.renderShowPage));
 
-router.post("/", isLoggedIn, validateListing, wrapAsync(listingController.createListing));
+router.post("/", isLoggedIn, validateListing, upload.single('listing[image]'),  wrapAsync(listingController.createListing));
 
 router.get("/:id/edit", validateObjectId, isLoggedIn, isListingExists, isOwner, wrapAsync(listingController.renderEditForm));
 
