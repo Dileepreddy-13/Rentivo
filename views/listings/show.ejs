@@ -1,6 +1,5 @@
 <% layout("/layouts/boilerplate")%>
 
-    <body>
         <div class="row">
             <div class="col-8 offset-3">
                 <h3>
@@ -57,8 +56,8 @@
                     <div class="mb-3 mt-3">
                         <label for="rating" class="form-label">Rating</label>
                         <fieldset class="starability-slot">
-                            <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked
-                                aria-label="No rating." />
+                            <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1"
+                                checked aria-label="No rating." />
                             <input type="radio" id="first-rate1" name="review[rating]" value="1" />
                             <label for="first-rate1" title="Terrible">1 star</label>
                             <input type="radio" id="first-rate2" name="review[rating]" value="2" />
@@ -86,30 +85,45 @@
 
                 <hr>
 
-                <p><b>Reviews</b></p>
 
-                <div class="row">
-                    <% for(let review of listing.reviews) { %>
-                        <div class="card col-5 mb-3 ms-3">
-                            <div class="card-body">
-                                <h5 class="card-title">@<%= review.author.username %>
-                                </h5>
-                                <p class="starability-result card-text" data-rating="<%=review.rating%>">
-                                </p>
-                                <p class="card-text">
-                                    <%=review.comment%>
-                                </p>
+
+                <% if(listing.reviews.length> 0) { %>
+
+                    <div class="row">
+                        <p><b>Reviews</b></p>
+                        <% for(let review of listing.reviews) { %>
+                            <div class="card col-5 mb-3 ms-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">@<%= review.author.username %>
+                                    </h5>
+                                    <p class="starability-result card-text" data-rating="<%=review.rating%>">
+                                    </p>
+                                    <p class="card-text">
+                                        <%=review.comment%>
+                                    </p>
+                                </div>
+                                <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
+                                    method="POST" class="mb-3 mt-3">
+                                    <button type="submit" class="btn btn-sm btn-dark">
+                                        Delete
+                                    </button>
+                                </form>
                             </div>
-                            <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
-                                method="POST" class="mb-3 mt-3">
-                                <button type="submit" class="btn btn-sm btn-dark">
-                                    Delete
-                                </button>
-                            </form>
-                        </div>
-                        <% } %>
-                </div>
+                            <% } %>
+                    </div>
+                    <% } %>
             </div>
-
+            <div class="col-8 offset-3 mb-3">
+                <h3>Where you'll stay</h3>
+                <div id="map"></div>
+            </div>
         </div>
-    </body>
+        <script>
+            const map = new maplibregl.Map({
+                container: 'map',
+                style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+                center: [77.2088, 28.6139], // India
+                zoom: 4
+            });
+
+        </script>
