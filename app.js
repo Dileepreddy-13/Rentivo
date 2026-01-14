@@ -44,9 +44,6 @@ async function main() {
 }
 
 
-app.get('/', (req, res) => {
-    res.send('Welcome to Rentivo!');
-});
 
 const sessionConfig = {
     secret: 'mysecretkey',
