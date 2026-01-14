@@ -1,3 +1,4 @@
+const ExpressError = require("./ExpressError");
 
 async function geocodeLocation(location) {
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`;
@@ -9,13 +10,13 @@ async function geocodeLocation(location) {
   });
 
   if (!response.ok) {
-    throw new Error("Geocoding request failed");
+    return null;
   }
 
   const data = await response.json();
 
   if (!data.length) {
-    throw new Error("Location not found");
+    return null;
   }
 
   return [
