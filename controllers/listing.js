@@ -1,4 +1,6 @@
 const Listing = require("../models/listing");
+const geocodeLocation = require("../utils/geocode");
+
 
 module.exports.index = async (req, res) => {
     const allListings = await Listing.find();
@@ -18,6 +20,7 @@ module.exports.renderShowPage = async (req, res) => {
 module.exports.createListing =async (req, res) => {
     
     const newListing = new Listing(req.body.listing);
+    const coordinates = await geocodeLocation(newListing.location);
     newListing.owner = req.user._id;
     if (req.file) {
         newListing.image = {
@@ -25,6 +28,10 @@ module.exports.createListing =async (req, res) => {
             filename: req.file.filename
         };
     }
+    newListing.geometry = {
+        type: 'Point',
+        coordinates: coordinates
+    };
     await newListing.save();
     req.flash("success", "New Listing Created!");
     res.redirect("/listings");
