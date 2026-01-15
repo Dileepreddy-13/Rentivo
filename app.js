@@ -18,6 +18,7 @@ const usersRouter = require('./routes/user');
 
 
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const flash = require('connect-flash');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
@@ -33,20 +34,35 @@ app.use(express.json());
 
 app.engine("ejs", ejsMate);
 
+const dbURL = process.env.ATLASDB_URL;
+
 main().then(() => {
     console.log('Connected to MongoDB');
 }).catch(err => {
     console.error('Error connecting to MongoDB', err);
 });
 
+
+
 async function main() {
-    await mongoose.connect('mongodb://127.0.0.1:27017/Rentivo');
+    await mongoose.connect(dbURL);
 }
 
+const store = MongoStore.create({
+    mongoUrl: dbURL,
+    crypto: {
+        secret: process.env.SECRET
+    },
+    touchAfter: 24 * 60 * 60
+});
 
+store.on("error", function(e){
+    console.log("SESSION STORE ERROR", e);
+});
 
 const sessionConfig = {
-    secret: 'mysecretkey',
+    store: store,
+    secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
     cookie : {
@@ -55,6 +71,8 @@ const sessionConfig = {
         httpOnly : true
     }
 };
+
+
 
 app.use(session(sessionConfig));
 app.use(flash());
