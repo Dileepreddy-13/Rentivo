@@ -5,6 +5,7 @@ if(process.env.NODE_ENV !== "production"){
 
 const express = require('express');
 const app = express();
+const port = process.env.PORT || 3000;
 const mongoose = require('mongoose');
 const path = require('path');
 const methodOverride = require('method-override');
@@ -18,7 +19,7 @@ const usersRouter = require('./routes/user');
 
 
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const { MongoStore } = require('connect-mongo');
 const flash = require('connect-flash');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
@@ -48,13 +49,12 @@ async function main() {
     await mongoose.connect(dbURL);
 }
 
-const store = MongoStore({
+const store = new MongoStore({
     mongoUrl: dbURL,
-    crypto: {
-        secret: process.env.SECRET
-    },
+    crypto: { secret: process.env.SECRET },
     touchAfter: 24 * 60 * 60
 });
+
 
 store.on("error", function(e){
     console.log("SESSION STORE ERROR", e);
@@ -111,6 +111,6 @@ app.use((err, req, res, next) => {
 
 
 
-app.listen(8080, () => {
-    console.log('Server is running on port 8080');
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
