@@ -48,7 +48,7 @@ async function main() {
     await mongoose.connect(dbURL);
 }
 
-const store = MongoStore.create({
+const store = MongoStore({
     mongoUrl: dbURL,
     crypto: {
         secret: process.env.SECRET
